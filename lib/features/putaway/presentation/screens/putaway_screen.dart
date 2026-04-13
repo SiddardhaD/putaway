@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/barcode_scanner_widget.dart';
@@ -90,13 +91,17 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Found ${tasks.length} tasks'),
-                backgroundColor: const Color(0xFF10B981), // Professional green
+                backgroundColor: const Color(0xFF00BCD4), // Professional green
                 duration: const Duration(seconds: 2),
               ),
             );
 
-            // Navigate to tasks list
-            context.router.pushNamed('/putaway-tasks');
+            // Navigate to tasks list with order number
+            context.router.push(
+              PutawayTasksListRoute(
+                orderNumber: _orderNumberController.text.trim(),
+              ),
+            );
           }
         },
         empty: () {
@@ -141,7 +146,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('PutAway Search'),
-        backgroundColor: const Color(0xFF047857), // Professional dark emerald
+        backgroundColor: const Color(0xFF008BA3), // Professional dark emerald
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -179,7 +184,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: const Color(
-                            0xFF047857,
+                            0xFF008BA3,
                           ), // Professional dark green
                           letterSpacing: 0.3,
                         ),
@@ -211,17 +216,17 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4), // Very light mint
+                          color: const Color(0xFFE0F7FA), // Very light mint
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: const Color(0xFF10B981).withAlpha(51),
+                            color: const Color(0xFF00BCD4).withAlpha(51),
                           ),
                         ),
                         child: Row(
                           children: [
                             const Icon(
                               Icons.info_outline,
-                              color: Color(0xFF10B981), // Professional green
+                              color: Color(0xFF00BCD4), // Professional green
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -231,7 +236,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: const Color(
-                                        0xFF047857,
+                                        0xFF008BA3,
                                       ), // Darker green for text
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -248,7 +253,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                           onPressed: isLoading ? null : _handleSearch,
                           isLoading: isLoading,
                           backgroundColor: const Color(
-                            0xFF10B981,
+                            0xFF00BCD4,
                           ), // Professional green
                         ),
                       ),

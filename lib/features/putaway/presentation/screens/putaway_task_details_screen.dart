@@ -61,7 +61,7 @@ class _PutawayTaskDetailsScreenState
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF10B981), // Professional emerald
+                    color: Color(0xFF00BCD4), // Professional emerald
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(16),
                     ),
@@ -113,10 +113,10 @@ class _PutawayTaskDetailsScreenState
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4), // Light mint
+                          color: const Color(0xFFE0F7FA), // Light mint
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF10B981).withAlpha(77),
+                            color: const Color(0xFF00BCD4).withAlpha(77),
                             width: 1.5,
                           ),
                         ),
@@ -126,7 +126,7 @@ class _PutawayTaskDetailsScreenState
                               children: [
                                 const Icon(
                                   Icons.edit_outlined,
-                                  color: Color(0xFF047857),
+                                  color: Color(0xFF008BA3),
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
@@ -135,7 +135,7 @@ class _PutawayTaskDetailsScreenState
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF047857),
+                                    color: const Color(0xFF008BA3),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -191,7 +191,7 @@ class _PutawayTaskDetailsScreenState
                           onPressed: () => Navigator.pop(context, false),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
-                              color: Color(0xFF10B981),
+                              color: Color(0xFF00BCD4),
                               width: 1.5,
                             ),
                             shape: RoundedRectangleBorder(
@@ -202,7 +202,7 @@ class _PutawayTaskDetailsScreenState
                           child: const Text(
                             'Cancel',
                             style: TextStyle(
-                              color: Color(0xFF047857),
+                              color: Color(0xFF008BA3),
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
                             ),
@@ -214,7 +214,7 @@ class _PutawayTaskDetailsScreenState
                         child: ElevatedButton(
                           onPressed: () => Navigator.pop(context, true),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: const Color(0xFF00BCD4),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -255,10 +255,10 @@ class _PutawayTaskDetailsScreenState
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withAlpha(26),
+            color: const Color(0xFF00BCD4).withAlpha(26),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: const Color(0xFF047857)),
+          child: Icon(icon, size: 18, color: const Color(0xFF008BA3)),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -278,7 +278,7 @@ class _PutawayTaskDetailsScreenState
                 value,
                 style: const TextStyle(
                   fontSize: 15,
-                  color: Color(0xFF047857),
+                  color: Color(0xFF008BA3),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -306,7 +306,7 @@ class _PutawayTaskDetailsScreenState
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(message),
-                backgroundColor: const Color(0xFF10B981), // Professional green
+                backgroundColor: const Color(0xFF00BCD4), // Professional green
                 duration: const Duration(seconds: 1),
               ),
             );
@@ -365,7 +365,7 @@ class _PutawayTaskDetailsScreenState
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('PutAway Task Details'),
-        backgroundColor: const Color(0xFF047857), // Professional darker green
+        backgroundColor: const Color(0xFF008BA3), // Professional darker green
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -400,7 +400,7 @@ class _PutawayTaskDetailsScreenState
                       widget.taskDetail.statusDescription,
                     ),
                   ],
-                  const Color(0xFFF0FDF4), // Very light green background
+                  const Color(0xFFE0F7FA), // Very light green background
                 ),
 
                 const SizedBox(height: 16),
@@ -418,7 +418,7 @@ class _PutawayTaskDetailsScreenState
                       widget.taskDetail.toLocation,
                     ),
                   ],
-                  const Color(0xFFF0FDF4), // Very light green background
+                  const Color(0xFFE0F7FA), // Very light green background
                 ),
 
                 const SizedBox(height: 16),
@@ -439,7 +439,7 @@ class _PutawayTaskDetailsScreenState
                           : widget.taskDetail.fromLot,
                     ),
                   ],
-                  const Color(0xFFF0FDF4), // Very light green background
+                  const Color(0xFFE0F7FA), // Very light green background
                 ),
 
                 const SizedBox(height: 16),
@@ -452,7 +452,7 @@ class _PutawayTaskDetailsScreenState
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: const Color(
-                        0xFF10B981,
+                        0xFF00BCD4,
                       ).withAlpha(77), // Subtle green border
                       width: 1.5,
                     ),
@@ -472,12 +472,12 @@ class _PutawayTaskDetailsScreenState
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withAlpha(26),
+                              color: const Color(0xFF00BCD4).withAlpha(26),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
                               Icons.edit_outlined,
-                              color: Color(0xFF047857),
+                              color: Color(0xFF008BA3),
                               size: 20,
                             ),
                           ),
@@ -487,7 +487,7 @@ class _PutawayTaskDetailsScreenState
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF047857),
+                                  color: const Color(0xFF008BA3),
                                 ),
                           ),
                         ],
@@ -535,11 +535,11 @@ class _PutawayTaskDetailsScreenState
                     onPressed: isLoading ? null : _handleConfirm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(
-                        0xFF10B981,
+                        0xFF00BCD4,
                       ), // Professional green
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: const Color(
-                        0xFF10B981,
+                        0xFF00BCD4,
                       ).withAlpha(128),
                       elevation: 2,
                       shape: RoundedRectangleBorder(
@@ -586,7 +586,7 @@ class _PutawayTaskDetailsScreenState
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF10B981).withAlpha(51),
+          color: const Color(0xFF00BCD4).withAlpha(51),
           width: 1,
         ),
         boxShadow: [
@@ -604,7 +604,7 @@ class _PutawayTaskDetailsScreenState
             title,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF065F46), // Darker green for headers
+              color: const Color(0xFF006064), // Darker green for headers
               letterSpacing: 0.5,
             ),
           ),

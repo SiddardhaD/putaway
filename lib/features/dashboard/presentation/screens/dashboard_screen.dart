@@ -59,9 +59,7 @@ class DashboardScreen extends StatelessWidget {
                   _AppCard(
                     title: 'PutAway',
                     icon: Icons.move_to_inbox_outlined,
-                    color: const Color(
-                      0xFF10B981,
-                    ), // Professional emerald green
+                    color: AppColors.putawayPrimary, // Cyan from logo
                     onTap: () {
                       context.router.pushNamed('/putaway');
                     },

@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF1976D2);
-  static const Color primaryDark = Color(0xFF0D47A1);
-  static const Color primaryLight = Color(0xFF63A4FF);
+  // Al Baker Group Brand Colors (from logo)
+  static const Color primary = Color(0xFF1976D2); // Primary Blue
+  static const Color primaryDark = Color(0xFF0D47A1); // Navy Blue
+  static const Color primaryLight = Color(0xFF63A4FF); // Light Blue
   
-  static const Color secondary = Color(0xFF2196F3);
-  static const Color secondaryLight = Color(0xFF6EC6FF);
+  static const Color secondary = Color(0xFF00BCD4); // Cyan (from logo)
+  static const Color secondaryLight = Color(0xFF62EFFF); // Light Cyan
+  static const Color secondaryDark = Color(0xFF008BA3); // Dark Cyan
   
-  static const Color accent = Color(0xFFFF6B6B);
+  static const Color accent = Color(0xFF00ACC1); // Turquoise accent
   
   static const Color background = Color(0xFFF5F7FA);
   static const Color surface = Color(0xFFFFFFFF);
@@ -47,6 +49,12 @@ class AppColors {
   static const Color statusPending = Color(0xFFFF9800);
   static const Color statusCompleted = Color(0xFF4CAF50);
   
+  // PutAway specific colors (Cyan theme from logo)
+  static const Color putawayPrimary = Color(0xFF00BCD4); // Cyan
+  static const Color putawayDark = Color(0xFF008BA3); // Dark Cyan
+  static const Color putawayLight = Color(0xFFE0F7FA); // Very light cyan
+  static const Color putawayAccent = Color(0xFF00ACC1); // Turquoise
+  
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [Color(0xFF1976D2), Color(0xFF2196F3)],
     begin: Alignment.topLeft,
@@ -57,5 +65,11 @@ class AppColors {
     colors: [Color(0xFF1976D2), Color(0xFF1565C0)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
+  );
+  
+  static const LinearGradient putawayGradient = LinearGradient(
+    colors: [Color(0xFF00BCD4), Color(0xFF00ACC1)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 }
