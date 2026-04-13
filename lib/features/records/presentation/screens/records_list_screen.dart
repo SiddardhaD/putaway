@@ -2,12 +2,19 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:putaway/core/router/app_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/empty_widget.dart';
 import '../../../../core/widgets/barcode_scanner_widget.dart';
 import '../../../search/presentation/providers/search_results_provider.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../providers/saved_records_provider.dart';
+import '../providers/record_providers.dart';
+import '../states/submit_state.dart';
 
 @RoutePage()
 class RecordsListScreen extends ConsumerStatefulWidget {
@@ -18,6 +25,7 @@ class RecordsListScreen extends ConsumerStatefulWidget {
 }
 
 class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
+  final Logger _logger = Logger();
   final _searchController = TextEditingController();
   final _itemCodeController = TextEditingController();
   String _searchQuery = '';
@@ -40,9 +48,120 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
     }
   }
 
+  Future<void> _handleSubmitAll() async {
+    final savedRecords = ref.read(savedRecordsProvider);
+    
+    if (savedRecords.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No records saved. Please save at least one record before submitting.'),
+          backgroundColor: AppColors.warning,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    _logger.i('RecordsListScreen: Submitting ${savedRecords.length} saved records');
+
+    // Get Branch/Plant value from local storage
+    final localStorage = ref.read(localStorageProvider);
+    final branch = localStorage.getString(AppConstants.keyBranchPlant) ?? '';
+    
+    if (branch.isEmpty) {
+      _logger.e('RecordsListScreen: Branch value not found in storage!');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Branch information not found. Please search again.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Get order number from first search result
+    final searchResults = ref.read(searchResultsProvider);
+    if (searchResults == null || searchResults.isEmpty) {
+      _logger.e('RecordsListScreen: No search results found!');
+      return;
+    }
+
+    final orderNumber = searchResults.first.orderNumber.toString();
+    
+    // Convert saved records to GridDataItems
+    final gridData = ref.read(savedRecordsProvider.notifier).getAllGridDataItems();
+
+    // Call submit API
+    await ref.read(submitViewModelProvider.notifier).submitReceive(
+      orderNumber: orderNumber,
+      branch: branch,
+      gridData: gridData,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final searchResults = ref.watch(searchResultsProvider);
+    final savedRecords = ref.watch(savedRecordsProvider);
+    final submitState = ref.watch(submitViewModelProvider);
+
+    // Listen to submit state changes
+    ref.listen<SubmitState>(submitViewModelProvider, (previous, next) {
+      if (previous == next) return;
+
+      next.when(
+        initial: () {},
+        loading: () {},
+        success: (message) {
+          _logger.i('RecordsListScreen: Submit successful!');
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AppColors.success,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+
+            // Clear saved records
+            ref.read(savedRecordsProvider.notifier).clearAll();
+
+            // Navigate to dashboard after success
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                context.router.pushNamed('/dashboard');
+              }
+            });
+          }
+        },
+        error: (message) {
+          _logger.e('RecordsListScreen: Submit error - $message');
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AppColors.error,
+                duration: const Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: _handleSubmitAll,
+                ),
+              ),
+            );
+          }
+        },
+      );
+    });
+
+    final isSubmitting = submitState.maybeWhen(
+      loading: () => true,
+      orElse: () => false,
+    );
 
     if (searchResults == null || searchResults.isEmpty) {
       return Scaffold(
@@ -254,13 +373,25 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                           const Divider(height: 1, thickness: 1),
                       itemBuilder: (context, index) {
                         final item = filteredResults[index];
+                        final lineNumber = item.lineNumber.toString();
+                        final isSaved = savedRecords.containsKey(lineNumber);
+                        final savedRecord = savedRecords[lineNumber];
+                        
+                        // Use saved quantity if available, otherwise use original
+                        final displayQuantity = isSaved && savedRecord != null
+                            ? savedRecord.quantity
+                            : item.quantityOpen.toStringAsFixed(0);
+
                         return InkWell(
-                          onTap: () {
+                          onTap: isSubmitting ? null : () {
                             context.router.push(
                               ItemDetailsRoute(lineItem: item),
                             );
                           },
-                          child: Padding(
+                          child: Container(
+                            color: isSaved 
+                                ? Colors.grey.shade100 
+                                : Colors.transparent,
                             padding: const EdgeInsets.symmetric(
                               vertical: 14,
                               horizontal: 16,
@@ -270,12 +401,29 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                 // Line Number
                                 Expanded(
                                   flex: 2,
-                                  child: Text(
-                                    '${item.lineNumber}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${item.lineNumber}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: isSaved 
+                                                  ? Colors.grey.shade700 
+                                                  : null,
+                                            ),
+                                      ),
+                                      if (isSaved) ...[
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.check_circle,
+                                          size: 16,
+                                          color: AppColors.success,
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                                 // Item Number
@@ -283,9 +431,14 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                   flex: 4,
                                   child: Text(
                                     item.itemNumber,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: isSaved 
+                                              ? Colors.grey.shade700 
+                                              : null,
+                                        ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -294,22 +447,26 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                 Expanded(
                                   flex: 2,
                                   child: Text(
-                                    '${item.quantityOpen.toStringAsFixed(0)}',
+                                    displayQuantity,
                                     textAlign: TextAlign.center,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.success,
+                                          color: isSaved 
+                                              ? Colors.grey.shade700 
+                                              : AppColors.success,
                                         ),
                                   ),
                                 ),
                                 // Arrow Icon
-                                const Icon(
+                                Icon(
                                   Icons.arrow_forward_ios,
                                   size: 16,
-                                  color: AppColors.textSecondary,
+                                  color: isSaved 
+                                      ? Colors.grey.shade400 
+                                      : AppColors.textSecondary,
                                 ),
                               ],
                             ),
@@ -319,6 +476,50 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                     ),
                   ),
           ),
+          
+          // Submit All button
+          if (savedRecords.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withAlpha(25),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.check_circle_outline,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${savedRecords.length} record(s) saved',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CustomButton(
+                    text: 'Submit All',
+                    onPressed: isSubmitting ? null : _handleSubmitAll,
+                    isLoading: isSubmitting,
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 16),
         ],
       ),

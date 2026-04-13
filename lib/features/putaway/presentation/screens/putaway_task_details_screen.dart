@@ -528,8 +528,6 @@ class _PutawayTaskDetailsScreenState
                 ),
 
                 const SizedBox(height: 24),
-
-                // Confirm Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,

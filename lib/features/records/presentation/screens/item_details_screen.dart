@@ -3,15 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../search/domain/entities/purchase_line_detail_entity.dart';
-import '../providers/record_providers.dart';
-import '../states/submit_state.dart';
-import '../../data/models/grid_data_item.dart';
+import '../providers/saved_records_provider.dart';
 
 @RoutePage()
 class ItemDetailsScreen extends ConsumerStatefulWidget {
@@ -32,7 +27,21 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _quantityController.text = widget.lineItem.quantityOpen.toStringAsFixed(0);
+    
+    // Check if there's already saved data for this record
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final savedRecord = ref.read(savedRecordsProvider.notifier)
+          .getSavedRecord(widget.lineItem.lineNumber.toString());
+      
+      if (savedRecord != null) {
+        // Populate fields with saved data
+        _quantityController.text = savedRecord.quantity;
+        _lotSerialController.text = savedRecord.lotSerial;
+      } else {
+        // Use original quantity as default
+        _quantityController.text = widget.lineItem.quantityOpen.toStringAsFixed(0);
+      }
+    });
   }
 
   @override
@@ -42,42 +51,38 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSubmit() async {
+  Future<void> _handleSave() async {
     if (_formKey.currentState?.validate() ?? false) {
-      _logger.i('ItemDetailsScreen: Form validated, submitting');
+      _logger.i('ItemDetailsScreen: Form validated, saving locally');
 
-      // Get Branch/Plant value from local storage (saved during search)
-      final localStorage = ref.read(localStorageProvider);
-      final branch = localStorage.getString(AppConstants.keyBranchPlant) ?? '';
-      
-      _logger.i('ItemDetailsScreen: Retrieved branch from storage: $branch');
-
-      if (branch.isEmpty) {
-        _logger.e('ItemDetailsScreen: Branch value not found in storage!');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Branch information not found. Please search again.'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-        return;
-      }
-
-      final gridDataItem = GridDataItem(
+      // Save data locally
+      final savedRecord = SavedRecordData(
         lineNumber: widget.lineItem.lineNumber.toString(),
         quantity: _quantityController.text.trim(),
         lotSerial: _lotSerialController.text.trim(),
+        savedAt: DateTime.now(),
       );
 
-      await ref
-          .read(submitViewModelProvider.notifier)
-          .submitReceive(
-            orderNumber: widget.lineItem.orderNumber.toString(),
-            branch: branch, // Use the saved branch value from search screen
-            gridData: [gridDataItem],
-          );
+      ref.read(savedRecordsProvider.notifier).saveRecord(savedRecord);
+
+      _logger.i('ItemDetailsScreen: Record saved locally for line ${savedRecord.lineNumber}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Record saved successfully'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 1),
+          ),
+        );
+
+        // Navigate back to list after a short delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            context.router.maybePop();
+          }
+        });
+      }
     }
   }
 
@@ -149,65 +154,6 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final submitState = ref.watch(submitViewModelProvider);
-
-    ref.listen<SubmitState>(submitViewModelProvider, (previous, next) {
-      _logger.i('ItemDetailsScreen: State changed from $previous to $next');
-
-      next.when(
-        initial: () {},
-        loading: () {
-          _logger.d('ItemDetailsScreen: State is loading');
-        },
-        success: (message) {
-          _logger.i('ItemDetailsScreen: Submit successful!');
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: AppColors.success,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-
-              // Navigate to dashboard after success
-              Future.delayed(const Duration(milliseconds: 500), () {
-                if (mounted) {
-                  context.router.pushNamed('/dashboard');
-                }
-              });
-          }
-        },
-        error: (message) {
-          _logger.e('ItemDetailsScreen: Submit error - $message');
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: AppColors.error,
-              duration: const Duration(seconds: 4),
-              action: SnackBarAction(
-                label: AppStrings.retry,
-                textColor: Colors.white,
-                onPressed: _handleSubmit,
-              ),
-            ),
-          );
-        },
-      );
-    });
-
-    final isLoading = submitState.maybeWhen(
-      loading: () => true,
-      orElse: () => false,
-    );
-
-    final errorMessage = submitState.maybeWhen(
-      error: (message) => message,
-      orElse: () => null,
-    );
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -324,42 +270,11 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
                   ),
                   child: Column(
                     children: [
-                      if (errorMessage != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withAlpha(25),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: AppColors.error.withAlpha(76),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: AppColors.error,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  errorMessage,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: AppColors.error),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
                       CustomTextField(
                         label: 'Quantity *',
                         controller: _quantityController,
                         keyboardType: TextInputType.number,
                         hint: 'Enter quantity',
-                        enabled: !isLoading,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Quantity is required';
@@ -367,6 +282,11 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
                           final qty = int.tryParse(value);
                           if (qty == null || qty <= 0) {
                             return 'Please enter a valid quantity';
+                          }
+                          // Validate against available quantity
+                          final availableQty = widget.lineItem.quantityOpen.toInt();
+                          if (qty > availableQty) {
+                            return 'Quantity cannot exceed $availableQty';
                           }
                           return null;
                         },
@@ -376,7 +296,6 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
                         label: 'LOT/Serial Number *',
                         controller: _lotSerialController,
                         hint: 'Enter LOT or serial number',
-                        enabled: !isLoading,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'LOT/Serial number is required';
@@ -389,9 +308,8 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
                 ),
                 const SizedBox(height: 24),
                 CustomButton(
-                  text: AppStrings.submit,
-                  onPressed: isLoading ? null : _handleSubmit,
-                  isLoading: isLoading,
+                  text: 'Save',
+                  onPressed: _handleSave,
                 ),
               ],
             ),
