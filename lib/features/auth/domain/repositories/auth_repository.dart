@@ -9,7 +9,7 @@ abstract class AuthRepository {
     String? organization,
   });
 
-  Future<Either<Failure, void>> logout();
+  Future<Either<Failure, void>> logout(String token);
 
   Future<Either<Failure, UserEntity?>> getCurrentUser();
 

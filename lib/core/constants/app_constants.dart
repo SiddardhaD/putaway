@@ -29,10 +29,12 @@ class AppConstants {
   
   // API Endpoints
   static const String endpointLogin = '/tokenrequest';
-  static const String endpointLogout = '/auth/logout';
+  static const String endpointLogout = '/tokenrequest/logout';
   static const String endpointRefreshToken = '/auth/refresh';
   static const String endpointSearchOrders = '/v3/orchestrator/ORCH_59_PurchaseOrderLineDetails';
   static const String endpointReceivePurchaseOrder = '/v3/orchestrator/ORCH_59_ReceivePurchaseOrder';
+  static const String endpointPutawayTaskDetails = '/v3/orchestrator/ORCH_59_PutawayTaskDetails';
+  static const String endpointConfirmPutaway = '/v3/orchestrator/ORCH_59_ConfirmPutawayRequest';
   static const String endpointGetOrderDetails = '/orders/details';
   static const String endpointGetRecords = '/records';
   static const String endpointAddRecord = '/records/add';

@@ -1,3 +1,4 @@
+import 'package:logger/logger.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../models/user_model.dart';
@@ -9,11 +10,12 @@ abstract class AuthRemoteDataSource {
     String? organization,
   });
 
-  Future<void> logout();
+  Future<void> logout(String token);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final DioClient dioClient;
+  final Logger _logger = Logger();
 
   AuthRemoteDataSourceImpl(this.dioClient);
 
@@ -32,12 +34,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       },
     );
 
-    // API returns the data directly, not wrapped in a 'data' field
     return UserModel.fromJson(response.data);
   }
 
   @override
-  Future<void> logout() async {
-    await dioClient.post(AppConstants.endpointLogout);
+  Future<void> logout(String token) async {
+    try {
+      _logger.i('AuthRemoteDataSource: Calling logout API');
+      
+      final requestBody = {
+        'deviceName': AppConstants.deviceName,
+        'token': token,
+      };
+
+      _logger.d('AuthRemoteDataSource: Logout request body: $requestBody');
+
+      final response = await dioClient.post(
+        AppConstants.endpointLogout,
+        data: requestBody,
+      );
+
+      _logger.i('AuthRemoteDataSource: Logout successful - Status: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('AuthRemoteDataSource: Logout error - $e');
+      rethrow;
+    }
   }
 }

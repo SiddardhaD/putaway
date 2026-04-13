@@ -86,11 +86,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             );
 
-            // Navigate to search screen
-            _logger.i('LoginScreen: Navigating to search screen');
+            // Navigate to dashboard instead of search
+            _logger.i('LoginScreen: Navigating to dashboard screen');
             Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) {
-                context.router.replace(const SearchRoute());
+                context.router.pushNamed('/dashboard');
               }
             });
           }

@@ -32,13 +32,17 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       _logger.i('AuthRepository: Login API successful, caching user data');
-      _logger.d('AuthRepository: User model - username: ${userModel.username}, env: ${userModel.environment}');
-      
+      _logger.d(
+        'AuthRepository: User model - username: ${userModel.username}, env: ${userModel.environment}',
+      );
+
       await localDataSource.cacheUser(userModel);
-      
+
       _logger.i('AuthRepository: User cached successfully');
       final userEntity = userModel.toEntity();
-      _logger.d('AuthRepository: Converted to entity - id: ${userEntity.id}, username: ${userEntity.username}');
+      _logger.d(
+        'AuthRepository: Converted to entity - id: ${userEntity.id}, username: ${userEntity.username}',
+      );
 
       return Right(userEntity);
     } on ServerException catch (e) {
@@ -51,22 +55,42 @@ class AuthRepositoryImpl implements AuthRepository {
       _logger.e('AuthRepository: TimeoutException - ${e.message}');
       return Left(TimeoutFailure(message: e.message, code: e.code));
     } catch (e, stackTrace) {
-      _logger.e('AuthRepository: Unknown error - $e', error: e, stackTrace: stackTrace);
-      return Left(UnknownFailure(message: 'Login failed: ${e.toString()}', code: 'UNKNOWN'));
+      _logger.e(
+        'AuthRepository: Unknown error - $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return Left(
+        UnknownFailure(
+          message: 'Login failed: ${e.toString()}',
+          code: 'UNKNOWN',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> logout() async {
+  Future<Either<Failure, void>> logout(String token) async {
     try {
-      await remoteDataSource.logout();
+      _logger.i('AuthRepository: Logging out');
+      await remoteDataSource.logout(token);
       await localDataSource.clearCache();
+
+      _logger.i('AuthRepository: Logout successful, local data cleared');
       return const Right(null);
     } on ServerException catch (e) {
+      _logger.e('AuthRepository: ServerException during logout - ${e.message}');
       return Left(ServerFailure(message: e.message, code: e.code));
     } on NetworkException catch (e) {
+      _logger.e(
+        'AuthRepository: NetworkException during logout - ${e.message}',
+      );
       return Left(NetworkFailure(message: e.message, code: e.code));
+    } on CacheException catch (e) {
+      _logger.e('AuthRepository: CacheException during logout - ${e.message}');
+      return Left(CacheFailure(message: e.message, code: e.code));
     } catch (e) {
+      _logger.e('AuthRepository: Unknown error during logout - $e');
       return Left(UnknownFailure(message: e.toString(), code: 'UNKNOWN'));
     }
   }

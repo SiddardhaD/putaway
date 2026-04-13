@@ -9,7 +9,9 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../states/login_state.dart';
+import '../states/logout_state.dart';
 import '../viewmodels/login_viewmodel.dart';
+import '../viewmodels/logout_viewmodel.dart';
 
 // Network Client Provider
 final dioClientProvider = Provider<DioClient>((ref) {
@@ -61,8 +63,13 @@ final logoutUseCaseProvider = Provider<LogoutUseCase>((ref) {
   return LogoutUseCase(repository);
 });
 
-// ViewModel Provider
+// ViewModel Providers
 final loginViewModelProvider = StateNotifierProvider<LoginViewModel, LoginState>((ref) {
   final loginUseCase = ref.read(loginUseCaseProvider);
   return LoginViewModel(loginUseCase);
+});
+
+final logoutViewModelProvider = StateNotifierProvider<LogoutViewModel, LogoutState>((ref) {
+  final logoutUseCase = ref.read(logoutUseCaseProvider);
+  return LogoutViewModel(logoutUseCase);
 });

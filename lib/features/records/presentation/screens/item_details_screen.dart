@@ -171,11 +171,12 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
               ),
             );
 
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                context.router.pushNamed('/search');
-              }
-            });
+              // Navigate to dashboard after success
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (mounted) {
+                  context.router.pushNamed('/dashboard');
+                }
+              });
           }
         },
         error: (message) {
@@ -213,6 +214,13 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
         title: const Text('Item Details'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            onPressed: () => context.router.pushNamed('/dashboard'),
+            tooltip: 'Home',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
