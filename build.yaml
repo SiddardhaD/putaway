@@ -1,0 +1,18 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        enabled: true
+        generate_for:
+          - lib/features/*/data/models/*.dart
+          - lib/features/*/presentation/states/*.dart
+      json_serializable:
+        enabled: true
+        generate_for:
+          - lib/features/*/data/models/*.dart
+      riverpod_generator:
+        enabled: true
+      injectable_generator:
+        enabled: true
+        generate_for:
+          - lib/core/di/injection_container.dart
