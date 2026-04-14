@@ -23,6 +23,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
   final Logger _logger = Logger();
   final _formKey = GlobalKey<FormState>();
   final _orderNumberController = TextEditingController();
+  bool _hasNavigated = false; // Flag to prevent duplicate navigation
 
   @override
   void dispose() {
@@ -49,6 +50,9 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       _logger.i(
         'PutawayScreen: Form validated, searching for order: $orderNumber',
       );
+
+      // Reset navigation flag for new search
+      _hasNavigated = false;
 
       // Call the view model to fetch putaway tasks
       await ref
@@ -86,22 +90,28 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
             'branchPlant': 'AWH',
           };
 
-          // Show success message
           if (mounted) {
+            // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Found ${tasks.length} tasks'),
-                backgroundColor: const Color(0xFF00BCD4), // Professional green
+                backgroundColor: const Color(0xFF00BCD4), // Professional cyan
                 duration: const Duration(seconds: 2),
               ),
             );
 
-            // Navigate to tasks list with order number
-            context.router.push(
-              PutawayTasksListRoute(
-                orderNumber: _orderNumberController.text.trim(),
-              ),
-            );
+            // Navigate to tasks list only once (not on refresh calls)
+            if (!_hasNavigated) {
+              _hasNavigated = true;
+              _logger.i('PutawayScreen: Navigating to tasks list');
+              context.router.push(
+                PutawayTasksListRoute(
+                  orderNumber: _orderNumberController.text.trim(),
+                ),
+              );
+            } else {
+              _logger.d('PutawayScreen: Navigation already performed, skipping (this is a refresh)');
+            }
           }
         },
         empty: () {

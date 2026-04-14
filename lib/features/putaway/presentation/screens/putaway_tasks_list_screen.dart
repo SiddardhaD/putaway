@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/putaway_task_detail_entity.dart';
 import '../providers/putaway_providers.dart';
 import '../states/confirm_putaway_state.dart';
+import '../states/putaway_state.dart';
 
 @RoutePage()
 class PutawayTasksListScreen extends ConsumerStatefulWidget {
@@ -44,6 +45,50 @@ class _PutawayTasksListScreenState
   @override
   Widget build(BuildContext context) {
     final tasks = ref.watch(putawayResultsProvider);
+
+    // Listen to putaway state changes (for refresh results)
+    ref.listen<PutawayState>(putawayViewModelProvider, (previous, next) {
+      if (previous == next) return;
+
+      next.when(
+        initial: () {},
+        loading: () {},
+        success: (refreshedTasks) {
+          _logger.i('PutawayTasksListScreen: List refreshed - ${refreshedTasks.length} tasks');
+          // Update the results provider with refreshed data
+          ref.read(putawayResultsProvider.notifier).state = refreshedTasks;
+        },
+        empty: () {
+          _logger.i('PutawayTasksListScreen: No tasks remaining after refresh');
+          
+          // Clear the results provider
+          ref.read(putawayResultsProvider.notifier).state = [];
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('All tasks completed! No pending tasks.'),
+                backgroundColor: AppColors.success,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        },
+        error: (message) {
+          _logger.e('PutawayTasksListScreen: Refresh error - $message');
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to refresh: $message'),
+                backgroundColor: AppColors.error,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
+      );
+    });
 
     // Listen to confirm putaway state changes
     ref.listen<ConfirmPutawayState>(confirmPutawayViewModelProvider, (
@@ -254,21 +299,47 @@ class _PutawayTasksListScreenState
           Expanded(
             child: filteredTasks.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: AppColors.textSecondary.withAlpha(128),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No tasks found',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: AppColors.textSecondary),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE0F7FA), // Light cyan
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              tasks.isEmpty 
+                                  ? Icons.task_alt // All tasks completed
+                                  : Icons.search_off, // Search filter empty
+                              size: 64,
+                              color: const Color(0xFF00BCD4),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            tasks.isEmpty 
+                                ? 'All Tasks Completed!' 
+                                : 'No tasks found',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  color: const Color(0xFF008BA3),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            tasks.isEmpty
+                                ? 'All PutAway tasks have been successfully confirmed.'
+                                : 'No tasks match your search criteria.',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppColors.textSecondary),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 : ListView.separated(
