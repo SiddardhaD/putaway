@@ -25,7 +25,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final Logger _logger = Logger();
   final _formKey = GlobalKey<FormState>();
-  final _organizationController = TextEditingController();
+  final _organizationController = TextEditingController(text: 'AWH');
   final _orderNumberController = TextEditingController();
   final String _selectedOrderType = 'OP'; // Fixed to OP (Purchase Order)
   bool _hasNavigated = false; // Flag to prevent duplicate navigation
@@ -61,11 +61,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     if (confirmed == true) {
       _logger.i('SearchScreen: User confirmed logout');
-      
+
       // Get token from secure storage
       final secureStorage = ref.read(secureStorageProvider);
       final token = await secureStorage.read(AppConstants.keyAccessToken) ?? '';
-      
+
       if (token.isEmpty) {
         _logger.w('SearchScreen: No token found, clearing local data only');
         // Clear local data and navigate to login
@@ -89,10 +89,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       context,
       title: 'Scan Order Number',
     );
-    if (result != null) {
+    if (result != null && result.isNotEmpty) {
+      _logger.i('SearchScreen: Barcode scanned - $result');
+      
       setState(() {
         _orderNumberController.text = result;
       });
+      
+      // Automatically trigger search after barcode scan
+      _logger.i('SearchScreen: Auto-triggering search after barcode scan');
+      await _handleSearch();
     }
   }
 
@@ -138,7 +144,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         },
         success: () {
           _logger.i('SearchScreen: Logout successful, navigating to login');
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -154,7 +160,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         },
         error: (message) {
           _logger.e('SearchScreen: Logout error - $message');
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -205,16 +211,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             if (branchValue.isNotEmpty) {
               final localStorage = ref.read(localStorageProvider);
               localStorage.setString(AppConstants.keyBranchPlant, branchValue);
-              _logger.i('SearchScreen: Saved branch value to storage: $branchValue');
+              _logger.i(
+                'SearchScreen: Saved branch value to storage: $branchValue',
+              );
             }
 
             // Navigate to records list screen only once
             if (!_hasNavigated) {
               _hasNavigated = true;
               _logger.i('SearchScreen: Navigating to records list');
-              Future.delayed(const Duration(milliseconds: 300), () {
+              Future.delayed(const Duration(milliseconds: 300), () async {
                 if (mounted) {
-                  context.router.pushNamed('/records');
+                  // Navigate and wait for user to come back
+                  await context.router.pushNamed('/records');
+                  
+                  // Clear the order number when user comes back from records screen
+                  _logger.i('SearchScreen: User returned from records list, clearing order number field');
+                  _orderNumberController.clear();
                 }
               });
             } else {
@@ -344,30 +357,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      CustomTextField(
-                        label: AppStrings.selectOrganization,
-                        hint: 'Enter organization code (optional)',
-                        controller: _organizationController,
-                        enabled: !isLoading,
-                        suffixIcon: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: isLoading
-                                  ? null
-                                  : () {
-                                      _organizationController.clear();
-                                    },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.search),
-                              onPressed: isLoading ? null : () {},
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      // CustomTextField(
+                      //   label: AppStrings.selectOrganization,
+                      //   hint: 'Enter organization code (optional)',
+                      //   controller: _organizationController,
+                      //   enabled: !isLoading,
+                      //   suffixIcon: Row(
+                      //     mainAxisSize: MainAxisSize.min,
+                      //     children: [
+                      //       IconButton(
+                      //         icon: const Icon(Icons.clear),
+                      //         onPressed: isLoading
+                      //             ? null
+                      //             : () {
+                      //                 _organizationController.clear();
+                      //               },
+                      //       ),
+                      //       IconButton(
+                      //         icon: const Icon(Icons.search),
+                      //         onPressed: isLoading ? null : () {},
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 24),
                       CustomTextField(
                         label: AppStrings.scanOrEnterPurchaseOrder,
                         controller: _orderNumberController,

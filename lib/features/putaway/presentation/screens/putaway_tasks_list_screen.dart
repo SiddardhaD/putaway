@@ -54,16 +54,18 @@ class _PutawayTasksListScreenState
         initial: () {},
         loading: () {},
         success: (refreshedTasks) {
-          _logger.i('PutawayTasksListScreen: List refreshed - ${refreshedTasks.length} tasks');
+          _logger.i(
+            'PutawayTasksListScreen: List refreshed - ${refreshedTasks.length} tasks',
+          );
           // Update the results provider with refreshed data
           ref.read(putawayResultsProvider.notifier).state = refreshedTasks;
         },
         empty: () {
           _logger.i('PutawayTasksListScreen: No tasks remaining after refresh');
-          
+
           // Clear the results provider
           ref.read(putawayResultsProvider.notifier).state = [];
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -76,7 +78,7 @@ class _PutawayTasksListScreenState
         },
         error: (message) {
           _logger.e('PutawayTasksListScreen: Refresh error - $message');
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -311,8 +313,9 @@ class _PutawayTasksListScreenState
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              tasks.isEmpty 
-                                  ? Icons.task_alt // All tasks completed
+                              tasks.isEmpty
+                                  ? Icons
+                                        .task_alt // All tasks completed
                                   : Icons.search_off, // Search filter empty
                               size: 64,
                               color: const Color(0xFF00BCD4),
@@ -320,8 +323,8 @@ class _PutawayTasksListScreenState
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            tasks.isEmpty 
-                                ? 'All Tasks Completed!' 
+                            tasks.isEmpty
+                                ? 'All Tasks Completed!'
                                 : 'No tasks found',
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(
@@ -490,11 +493,14 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 8,
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
+          constraints: const BoxConstraints(
+            maxWidth: 400,
+            maxHeight: 500, // Add max height constraint
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header with icon
+              // Header with icon (Fixed at top)
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
@@ -516,9 +522,9 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Confirm PutAway',
-                      style: TextStyle(
+                    Text(
+                      'Please Confirm Task #${widget.task.task}',
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -527,7 +533,7 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Please review the details before confirming',
+                      'Trip: ${widget.task.trip} • Review details before confirming',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withAlpha(230),
@@ -538,93 +544,97 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                 ),
               ),
 
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Task & Trip (Highlighted section)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0F7FA), // Light mint
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF00BCD4).withAlpha(77),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
+              // Content (Scrollable)
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Task & Trip (Highlighted section)
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F7FA), // Light mint
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF00BCD4).withAlpha(77),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
                             children: [
-                              const Icon(
-                                Icons.task_outlined,
-                                color: Color(0xFF008BA3),
-                                size: 18,
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.task_outlined,
+                                    color: Color(0xFF008BA3),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Task Details',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF008BA3),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Task Details',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF008BA3),
-                                  letterSpacing: 0.5,
-                                ),
+                              const SizedBox(height: 12),
+                              _buildDetailRow(
+                                'Task Number',
+                                widget.task.task.toString(),
+                                Icons.tag,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildDetailRow(
+                                'Trip Number',
+                                widget.task.trip.toString(),
+                                Icons.route,
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          _buildDetailRow(
-                            'Task Number',
-                            widget.task.task.toString(),
-                            Icons.tag,
-                          ),
-                          const SizedBox(height: 8),
-                          _buildDetailRow(
-                            'Trip Number',
-                            widget.task.trip.toString(),
-                            Icons.route,
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
 
-                    const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                    // Other details
-                    _buildDetailRow(
-                      'From Location',
-                      widget.task.fromLocation,
-                      Icons.location_on_outlined,
+                        // Other details
+                        _buildDetailRow(
+                          'From Location',
+                          widget.task.fromLocation,
+                          Icons.location_on_outlined,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildDetailRow(
+                          'To Location',
+                          widget.task.toLocation,
+                          Icons.location_on,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildDetailRow(
+                          'Quantity',
+                          '${widget.task.quantity} ${widget.task.um}',
+                          Icons.inventory_2_outlined,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildDetailRow(
+                          'LOT/Serial',
+                          widget.task.fromLot.trim().isEmpty
+                              ? 'N/A'
+                              : widget.task.fromLot,
+                          Icons.qr_code_2_outlined,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    _buildDetailRow(
-                      'To Location',
-                      widget.task.toLocation,
-                      Icons.location_on,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildDetailRow(
-                      'Quantity',
-                      '${widget.task.quantity} ${widget.task.um}',
-                      Icons.inventory_2_outlined,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildDetailRow(
-                      'LOT/Serial',
-                      widget.task.fromLot.trim().isEmpty
-                          ? 'N/A'
-                          : widget.task.fromLot,
-                      Icons.qr_code_2_outlined,
-                    ),
-                  ],
+                  ),
                 ),
               ),
 
-              // Actions
+              // Actions (Fixed at bottom)
               if (isLoading)
                 const Padding(
                   padding: EdgeInsets.all(24),
@@ -650,6 +660,12 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
               else
                 Container(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(16),
+                    ),
+                  ),
                   child: Row(
                     children: [
                       Expanded(

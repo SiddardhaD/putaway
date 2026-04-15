@@ -6,12 +6,14 @@ class SavedRecordData {
   final String lineNumber;
   final String quantity;
   final String lotSerial;
+  final String receiptOpt;
   final DateTime savedAt;
 
   SavedRecordData({
     required this.lineNumber,
     required this.quantity,
     required this.lotSerial,
+    required this.receiptOpt,
     required this.savedAt,
   });
 
@@ -20,6 +22,7 @@ class SavedRecordData {
       lineNumber: lineNumber,
       quantity: quantity,
       lotSerial: lotSerial,
+      receiptOpt: receiptOpt,
     );
   }
 }

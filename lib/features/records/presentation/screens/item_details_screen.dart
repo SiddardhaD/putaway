@@ -55,17 +55,18 @@ class _ItemDetailsScreenState extends ConsumerState<ItemDetailsScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       _logger.i('ItemDetailsScreen: Form validated, saving locally');
 
-      // Save data locally
+      // Save data locally with ReceiptOpt="1" (indicating this record was edited)
       final savedRecord = SavedRecordData(
         lineNumber: widget.lineItem.lineNumber.toString(),
         quantity: _quantityController.text.trim(),
         lotSerial: _lotSerialController.text.trim(),
+        receiptOpt: '1', // Mark as edited
         savedAt: DateTime.now(),
       );
 
       ref.read(savedRecordsProvider.notifier).saveRecord(savedRecord);
 
-      _logger.i('ItemDetailsScreen: Record saved locally for line ${savedRecord.lineNumber}');
+      _logger.i('ItemDetailsScreen: Record saved locally for line ${savedRecord.lineNumber} with ReceiptOpt=1');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

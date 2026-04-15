@@ -36,10 +36,16 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       context,
       title: 'Scan Order Number',
     );
-    if (result != null) {
+    if (result != null && result.isNotEmpty) {
+      _logger.i('PutawayScreen: Barcode scanned - $result');
+      
       setState(() {
         _orderNumberController.text = result;
       });
+      
+      // Automatically trigger search after barcode scan
+      _logger.i('PutawayScreen: Auto-triggering search after barcode scan');
+      await _handleSearch();
     }
   }
 
@@ -68,7 +74,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
   @override
   Widget build(BuildContext context) {
     // Listen to putaway state changes - this is properly scoped
-    ref.listen<PutawayState>(putawayViewModelProvider, (previous, next) {
+    ref.listen<PutawayState>(putawayViewModelProvider, (previous, next) async {
       // Only process if state actually changed
       if (previous == next) return;
 
@@ -77,7 +83,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       next.when(
         initial: () {},
         loading: () {},
-        success: (tasks) {
+        success: (tasks) async {
           _logger.i('PutawayScreen: Success - ${tasks.length} tasks found');
 
           // Store results in provider
@@ -104,11 +110,19 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
             if (!_hasNavigated) {
               _hasNavigated = true;
               _logger.i('PutawayScreen: Navigating to tasks list');
-              context.router.push(
+              
+              // Navigate and wait for user to come back
+              await context.router.push(
                 PutawayTasksListRoute(
                   orderNumber: _orderNumberController.text.trim(),
                 ),
               );
+              
+              // Clear the order number when user comes back from tasks list screen
+              _logger.i('PutawayScreen: User returned from tasks list, clearing order number field');
+              if (mounted) {
+                _orderNumberController.clear();
+              }
             } else {
               _logger.d('PutawayScreen: Navigation already performed, skipping (this is a refresh)');
             }

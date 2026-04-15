@@ -6,12 +6,12 @@ import 'package:logger/logger.dart';
 import 'package:putaway/core/router/app_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/empty_widget.dart';
 import '../../../../core/widgets/barcode_scanner_widget.dart';
 import '../../../search/presentation/providers/search_results_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../data/models/grid_data_item.dart';
 import '../providers/saved_records_provider.dart';
 import '../providers/record_providers.dart';
 import '../states/submit_state.dart';
@@ -49,25 +49,12 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
   }
 
   Future<void> _handleSubmitAll() async {
-    final savedRecords = ref.read(savedRecordsProvider);
-    
-    if (savedRecords.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No records saved. Please save at least one record before submitting.'),
-          backgroundColor: AppColors.warning,
-          duration: Duration(seconds: 3),
-        ),
-      );
-      return;
-    }
-
-    _logger.i('RecordsListScreen: Submitting ${savedRecords.length} saved records');
+    _logger.i('RecordsListScreen: Preparing to submit all records');
 
     // Get Branch/Plant value from local storage
     final localStorage = ref.read(localStorageProvider);
     final branch = localStorage.getString(AppConstants.keyBranchPlant) ?? '';
-    
+
     if (branch.isEmpty) {
       _logger.e('RecordsListScreen: Branch value not found in storage!');
       if (mounted) {
@@ -81,24 +68,66 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
       return;
     }
 
-    // Get order number from first search result
+    // Get all search results
     final searchResults = ref.read(searchResultsProvider);
     if (searchResults == null || searchResults.isEmpty) {
       _logger.e('RecordsListScreen: No search results found!');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No records found. Please search again.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
       return;
     }
 
     final orderNumber = searchResults.first.orderNumber.toString();
-    
-    // Convert saved records to GridDataItems
-    final gridData = ref.read(savedRecordsProvider.notifier).getAllGridDataItems();
+    final savedRecords = ref.read(savedRecordsProvider);
+
+    _logger.i(
+      'RecordsListScreen: Total records: ${searchResults.length}, Edited records: ${savedRecords.length}',
+    );
+
+    // Build GridData for ALL records
+    final gridData = searchResults.map((lineItem) {
+      final lineNumber = lineItem.lineNumber.toString();
+      final savedRecord = savedRecords[lineNumber];
+      
+      if (savedRecord != null) {
+        // This record was edited - use saved data with ReceiptOpt="1"
+        _logger.d('RecordsListScreen: Line $lineNumber - EDITED (ReceiptOpt=1)');
+        return GridDataItem(
+          lineNumber: lineNumber,
+          quantity: savedRecord.quantity,
+          lotSerial: savedRecord.lotSerial,
+          receiptOpt: '1', // Edited record
+        );
+      } else {
+        // This record was NOT edited - use original data with ReceiptOpt=""
+        _logger.d('RecordsListScreen: Line $lineNumber - NOT EDITED (ReceiptOpt="")');
+        return GridDataItem(
+          lineNumber: lineNumber,
+          quantity: lineItem.quantityOpen.toString(),
+          lotSerial: '', // Default empty for non-edited records
+          receiptOpt: '', // Not edited
+        );
+      }
+    }).toList();
+
+    _logger.i(
+      'RecordsListScreen: Submitting ${gridData.length} records to API',
+    );
 
     // Call submit API
-    await ref.read(submitViewModelProvider.notifier).submitReceive(
-      orderNumber: orderNumber,
-      branch: branch,
-      gridData: gridData,
-    );
+    await ref
+        .read(submitViewModelProvider.notifier)
+        .submitReceive(
+          orderNumber: orderNumber,
+          branch: branch,
+          gridData: gridData,
+        );
   }
 
   @override
@@ -199,56 +228,56 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
       body: Column(
         children: [
           // Item Code Scanner
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            color: Colors.white,
-            child: CustomTextField(
-              controller: _itemCodeController,
-              label: 'Scan or Enter Item Code',
-              hint: 'Scan or enter item code',
-              prefixIcon: const Icon(Icons.inventory_2_outlined, size: 20),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner),
-                onPressed: _scanItemCode,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchController.text = value;
-                  _searchQuery = value;
-                });
-              },
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          //   color: Colors.white,
+          //   child: CustomTextField(
+          //     controller: _itemCodeController,
+          //     label: 'Scan or Enter Item Code',
+          //     hint: 'Scan or enter item code',
+          //     prefixIcon: const Icon(Icons.inventory_2_outlined, size: 20),
+          //     suffixIcon: IconButton(
+          //       icon: const Icon(Icons.qr_code_scanner),
+          //       onPressed: _scanItemCode,
+          //     ),
+          //     onChanged: (value) {
+          //       setState(() {
+          //         _searchController.text = value;
+          //         _searchQuery = value;
+          //       });
+          //     },
+          //   ),
+          // ),
 
           // Search bar
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            color: Colors.white,
-            child: CustomTextField(
-              controller: _searchController,
-              label: 'Search',
-              hint: 'Search by line, item, or description',
-              prefixIcon: const Icon(Icons.search, size: 20),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 20),
-                      onPressed: () {
-                        _searchController.clear();
-                        _itemCodeController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                  if (_itemCodeController.text != value) {
-                    _itemCodeController.text = value;
-                  }
-                });
-              },
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          //   color: Colors.white,
+          //   child: CustomTextField(
+          //     controller: _searchController,
+          //     label: 'Search',
+          //     hint: 'Search by line, item, or description',
+          //     prefixIcon: const Icon(Icons.search, size: 20),
+          //     suffixIcon: _searchQuery.isNotEmpty
+          //         ? IconButton(
+          //             icon: const Icon(Icons.clear, size: 20),
+          //             onPressed: () {
+          //               _searchController.clear();
+          //               _itemCodeController.clear();
+          //               setState(() => _searchQuery = '');
+          //             },
+          //           )
+          //         : null,
+          //     onChanged: (value) {
+          //       setState(() {
+          //         _searchQuery = value;
+          //         if (_itemCodeController.text != value) {
+          //           _itemCodeController.text = value;
+          //         }
+          //       });
+          //     },
+          //   ),
+          // ),
 
           // Order header - Purchase Order UK55955
           Container(
@@ -376,21 +405,23 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                         final lineNumber = item.lineNumber.toString();
                         final isSaved = savedRecords.containsKey(lineNumber);
                         final savedRecord = savedRecords[lineNumber];
-                        
+
                         // Use saved quantity if available, otherwise use original
                         final displayQuantity = isSaved && savedRecord != null
                             ? savedRecord.quantity
                             : item.quantityOpen.toStringAsFixed(0);
 
                         return InkWell(
-                          onTap: isSubmitting ? null : () {
-                            context.router.push(
-                              ItemDetailsRoute(lineItem: item),
-                            );
-                          },
+                          onTap: isSubmitting
+                              ? null
+                              : () {
+                                  context.router.push(
+                                    ItemDetailsRoute(lineItem: item),
+                                  );
+                                },
                           child: Container(
-                            color: isSaved 
-                                ? Colors.grey.shade100 
+                            color: isSaved
+                                ? Colors.grey.shade100
                                 : Colors.transparent,
                             padding: const EdgeInsets.symmetric(
                               vertical: 14,
@@ -410,8 +441,8 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                             .bodyMedium
                                             ?.copyWith(
                                               fontWeight: FontWeight.w600,
-                                              color: isSaved 
-                                                  ? Colors.grey.shade700 
+                                              color: isSaved
+                                                  ? Colors.grey.shade700
                                                   : null,
                                             ),
                                       ),
@@ -435,8 +466,8 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: isSaved 
-                                              ? Colors.grey.shade700 
+                                          color: isSaved
+                                              ? Colors.grey.shade700
                                               : null,
                                         ),
                                     maxLines: 1,
@@ -454,8 +485,8 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                         .bodyMedium
                                         ?.copyWith(
                                           fontWeight: FontWeight.w600,
-                                          color: isSaved 
-                                              ? Colors.grey.shade700 
+                                          color: isSaved
+                                              ? Colors.grey.shade700
                                               : AppColors.success,
                                         ),
                                   ),
@@ -464,8 +495,8 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                                 Icon(
                                   Icons.arrow_forward_ios,
                                   size: 16,
-                                  color: isSaved 
-                                      ? Colors.grey.shade400 
+                                  color: isSaved
+                                      ? Colors.grey.shade400
                                       : AppColors.textSecondary,
                                 ),
                               ],
@@ -476,7 +507,7 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                     ),
                   ),
           ),
-          
+
           // Submit All button
           if (savedRecords.isNotEmpty)
             Padding(
@@ -503,10 +534,11 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                         const SizedBox(width: 8),
                         Text(
                           '${savedRecords.length} record(s) saved',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ],
                     ),

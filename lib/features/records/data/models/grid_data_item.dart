@@ -9,6 +9,7 @@ class GridDataItem with _$GridDataItem {
     @JsonKey(name: 'LineNumber') required String lineNumber,
     @JsonKey(name: 'Quantity') required String quantity,
     @JsonKey(name: 'LotSerial') required String lotSerial,
+    @JsonKey(name: 'ReceiptOpt') required String receiptOpt,
   }) = _GridDataItem;
 
   factory GridDataItem.fromJson(Map<String, dynamic> json) =>
