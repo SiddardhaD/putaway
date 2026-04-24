@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/barcode_scanner_widget.dart';
-import '../providers/putaway_providers.dart';
-import '../states/putaway_state.dart';
+import '../../../putaway/presentation/states/putaway_state.dart';
+import '../providers/picking_providers.dart';
 
 @RoutePage()
-class PutawayScreen extends ConsumerStatefulWidget {
-  const PutawayScreen({super.key});
+class PickingScreen extends ConsumerStatefulWidget {
+  const PickingScreen({super.key});
 
   @override
-  ConsumerState<PutawayScreen> createState() => _PutawayScreenState();
+  ConsumerState<PickingScreen> createState() => _PickingScreenState();
 }
 
-class _PutawayScreenState extends ConsumerState<PutawayScreen> {
+class _PickingScreenState extends ConsumerState<PickingScreen> {
   final Logger _logger = Logger();
   final _formKey = GlobalKey<FormState>();
   final _orderNumberController = TextEditingController();
@@ -37,13 +38,13 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       title: 'Scan Order Number',
     );
     if (result != null && result.isNotEmpty) {
-      _logger.i('PutawayScreen: Barcode scanned - $result');
+      _logger.i('PickingScreen: Barcode scanned - $result');
 
       setState(() {
         _orderNumberController.text = result;
       });
 
-      _logger.i('PutawayScreen: Auto-triggering search after barcode scan');
+      _logger.i('PickingScreen: Auto-triggering search after barcode scan');
       await _handleSearch();
     }
   }
@@ -53,14 +54,14 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       final orderNumber = _orderNumberController.text.trim();
 
       _logger.i(
-        'PutawayScreen: Form validated, searching for order: $orderNumber',
+        'PickingScreen: Form validated, searching for order: $orderNumber',
       );
 
       _hasNavigated = false;
 
-      await ref.read(putawayViewModelProvider.notifier).getPutawayTasks(
+      await ref.read(pickingViewModelProvider.notifier).getPickingTasks(
             orderNumber: orderNumber,
-            orderType: 'OP',
+            orderType: AppConstants.orderTypePickingTasks,
             branchPlant: 'AWH',
           );
     }
@@ -68,22 +69,22 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<PutawayState>(putawayViewModelProvider, (previous, next) async {
+    ref.listen<PutawayState>(pickingViewModelProvider, (previous, next) async {
       if (previous == next) return;
 
-      _logger.i('PutawayScreen: State changed from $previous to $next');
+      _logger.i('PickingScreen: State changed from $previous to $next');
 
       next.when(
         initial: () {},
         loading: () {},
         success: (tasks) async {
-          _logger.i('PutawayScreen: Success - ${tasks.length} tasks found');
+          _logger.i('PickingScreen: Success - ${tasks.length} tasks found');
 
-          ref.read(putawayResultsProvider.notifier).state = tasks;
+          ref.read(pickingResultsProvider.notifier).state = tasks;
 
-          ref.read(putawaySearchParamsProvider.notifier).state = {
+          ref.read(pickingSearchParamsProvider.notifier).state = {
             'orderNumber': _orderNumberController.text.trim(),
-            'orderType': 'OP',
+            'orderType': AppConstants.orderTypePickingTasks,
             'branchPlant': 'AWH',
           };
 
@@ -98,29 +99,29 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
 
             if (!_hasNavigated) {
               _hasNavigated = true;
-              _logger.i('PutawayScreen: Navigating to tasks list');
+              _logger.i('PickingScreen: Navigating to tasks list');
 
               await context.router.push(
-                PutawayTasksListRoute(
+                PickingTasksListRoute(
                   orderNumber: _orderNumberController.text.trim(),
                 ),
               );
 
               _logger.i(
-                'PutawayScreen: User returned from tasks list, clearing order number field',
+                'PickingScreen: User returned from tasks list, clearing order number field',
               );
               if (mounted) {
                 _orderNumberController.clear();
               }
             } else {
               _logger.d(
-                'PutawayScreen: Navigation already performed, skipping (refresh)',
+                'PickingScreen: Navigation already performed, skipping (refresh)',
               );
             }
           }
         },
         empty: () {
-          _logger.i('PutawayScreen: No tasks found');
+          _logger.i('PickingScreen: No tasks found');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -132,7 +133,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
           }
         },
         error: (message) {
-          _logger.e('PutawayScreen: Error - $message');
+          _logger.e('PickingScreen: Error - $message');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -151,8 +152,8 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
       );
     });
 
-    final putawayState = ref.watch(putawayViewModelProvider);
-    final isLoading = putawayState.maybeWhen(
+    final pickingState = ref.watch(pickingViewModelProvider);
+    final isLoading = pickingState.maybeWhen(
       loading: () => true,
       orElse: () => false,
     );
@@ -160,7 +161,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('PutAway Search'),
+        title: const Text('Picking Search'),
         backgroundColor: const Color(0xFF008BA3),
         foregroundColor: Colors.white,
         actions: [
@@ -195,7 +196,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Search PutAway Tasks',
+                        'Search Picking Tasks',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF008BA3),
@@ -204,7 +205,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Enter order number to view putaway tasks',
+                        'Enter order number to view picking tasks',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -245,7 +246,7 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Default: Order Type = OP, Branch = AWH',
+                                'Default: Order Type = SO, Branch = AWH',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: const Color(0xFF008BA3),
                                       fontWeight: FontWeight.w500,

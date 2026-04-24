@@ -64,6 +64,14 @@ class DashboardScreen extends StatelessWidget {
                       context.router.pushNamed('/putaway');
                     },
                   ),
+                  _AppCard(
+                    title: 'Picking',
+                    icon: Icons.outbox_outlined,
+                    color: const Color(0xFF7C3AED),
+                    onTap: () {
+                      context.router.pushNamed('/picking');
+                    },
+                  ),
                 ],
               ),
             ),

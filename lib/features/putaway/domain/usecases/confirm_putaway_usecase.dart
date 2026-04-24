@@ -10,7 +10,8 @@ class ConfirmPutawayUseCase {
   Future<Either<Failure, void>> call({
     required String task,
     required String trip,
+    required String version,
   }) async {
-    return await repository.confirmPutaway(task: task, trip: trip);
+    return await repository.confirmPutaway(task: task, trip: trip, version: version);
   }
 }

@@ -7,10 +7,12 @@ abstract class PutawayRepository {
     required String orderNumber,
     required String orderType,
     required String branchPlant,
+    required String version,
   });
   
   Future<Either<Failure, void>> confirmPutaway({
     required String task,
     required String trip,
+    required String version,
   });
 }

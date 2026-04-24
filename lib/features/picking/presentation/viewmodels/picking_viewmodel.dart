@@ -1,37 +1,37 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../domain/usecases/get_putaway_tasks_usecase.dart';
-import '../states/putaway_state.dart';
+import '../../../putaway/domain/usecases/get_putaway_tasks_usecase.dart';
+import '../../../putaway/presentation/states/putaway_state.dart';
 
-class PutawayViewModel extends StateNotifier<PutawayState> {
+class PickingViewModel extends StateNotifier<PutawayState> {
   final GetPutawayTasksUseCase getPutawayTasksUseCase;
   final Logger _logger = Logger();
 
-  PutawayViewModel(this.getPutawayTasksUseCase) : super(const PutawayState.initial());
+  PickingViewModel(this.getPutawayTasksUseCase) : super(const PutawayState.initial());
 
-  Future<void> getPutawayTasks({
+  Future<void> getPickingTasks({
     required String orderNumber,
     required String orderType,
     required String branchPlant,
   }) async {
-    _logger.i('PutawayViewModel: Getting tasks - order: $orderNumber');
+    _logger.i('PickingViewModel: Getting tasks - order: $orderNumber');
     state = const PutawayState.loading();
 
     final result = await getPutawayTasksUseCase(
       orderNumber: orderNumber,
       orderType: orderType,
       branchPlant: branchPlant,
-      version: AppConstants.orchestratorVersionPutaway,
+      version: AppConstants.orchestratorVersionPicking,
     );
 
     result.fold(
       (failure) {
-        _logger.e('PutawayViewModel: Failed - ${failure.message}');
+        _logger.e('PickingViewModel: Failed - ${failure.message}');
         state = PutawayState.error(failure.message);
       },
       (tasks) {
-        _logger.i('PutawayViewModel: Success - ${tasks.length} tasks');
+        _logger.i('PickingViewModel: Success - ${tasks.length} tasks');
         if (tasks.isEmpty) {
           state = const PutawayState.empty();
         } else {
@@ -42,7 +42,7 @@ class PutawayViewModel extends StateNotifier<PutawayState> {
   }
 
   void reset() {
-    _logger.d('PutawayViewModel: Resetting state');
+    _logger.d('PickingViewModel: Resetting state');
     state = const PutawayState.initial();
   }
 }

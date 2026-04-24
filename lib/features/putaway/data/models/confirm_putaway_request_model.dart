@@ -10,6 +10,7 @@ class ConfirmPutawayRequestModel with _$ConfirmPutawayRequestModel {
     required String token,
     @JsonKey(name: 'Task') required String task,
     @JsonKey(name: 'Trip') required String trip,
+    @JsonKey(name: 'Version') required String version,
   }) = _ConfirmPutawayRequestModel;
 
   factory ConfirmPutawayRequestModel.fromJson(Map<String, dynamic> json) =>

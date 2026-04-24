@@ -42,6 +42,13 @@ class AppConstants {
   static const String endpointSubmitRecord = '/records/submit';
   static const String endpointGetLocations = '/locations';
   static const String endpointGetItems = '/items';
+
+  /// Orchestrator `Version` for ORCH_59_PutawayTaskDetails / ORCH_59_ConfirmPutawayRequest
+  static const String orchestratorVersionPutaway = 'ZJDE0001';
+  static const String orchestratorVersionPicking = 'ZJDE0002';
+
+  /// [OrderType] for picking flow task-details / refresh (ORCH_59_PutawayTaskDetails)
+  static const String orderTypePickingTasks = 'SO';
   
   // Device Name for API
   static const String deviceName = 'MOBILE_APP';

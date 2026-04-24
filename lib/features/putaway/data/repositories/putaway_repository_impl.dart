@@ -17,6 +17,7 @@ class PutawayRepositoryImpl implements PutawayRepository {
     required String orderNumber,
     required String orderType,
     required String branchPlant,
+    required String version,
   }) async {
     try {
       _logger.i('PutawayRepository: Getting putaway tasks - order: $orderNumber');
@@ -25,6 +26,7 @@ class PutawayRepositoryImpl implements PutawayRepository {
         orderNumber: orderNumber,
         orderType: orderType,
         branchPlant: branchPlant,
+        version: version,
       );
 
       final taskEntities = taskModels.map((model) => model.toEntity()).toList();
@@ -50,10 +52,11 @@ class PutawayRepositoryImpl implements PutawayRepository {
   Future<Either<Failure, void>> confirmPutaway({
     required String task,
     required String trip,
+    required String version,
   }) async {
     try {
       _logger.i('PutawayRepository: Confirming putaway - task: $task, trip: $trip');
-      await remoteDataSource.confirmPutaway(task: task, trip: trip);
+      await remoteDataSource.confirmPutaway(task: task, trip: trip, version: version);
       _logger.i('PutawayRepository: Confirm successful');
       return const Right(null);
     } on ServerException catch (e) {

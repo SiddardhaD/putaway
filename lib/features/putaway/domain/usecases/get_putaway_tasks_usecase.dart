@@ -12,11 +12,13 @@ class GetPutawayTasksUseCase {
     required String orderNumber,
     required String orderType,
     required String branchPlant,
+    required String version,
   }) async {
     return await repository.getPutawayTasks(
       orderNumber: orderNumber,
       orderType: orderType,
       branchPlant: branchPlant,
+      version: version,
     );
   }
 }

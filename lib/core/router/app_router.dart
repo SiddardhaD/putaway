@@ -13,6 +13,9 @@ import '../../features/records/presentation/screens/item_details_screen.dart';
 import '../../features/putaway/presentation/screens/putaway_screen.dart';
 import '../../features/putaway/presentation/screens/putaway_tasks_list_screen.dart';
 import '../../features/putaway/presentation/screens/putaway_task_details_screen.dart';
+import '../../features/picking/presentation/screens/picking_screen.dart';
+import '../../features/picking/presentation/screens/picking_tasks_list_screen.dart';
+import '../../features/picking/presentation/screens/picking_task_details_screen.dart';
 
 part 'app_router.gr.dart';
 
@@ -26,7 +29,10 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: RecordsListRoute.page, path: '/records'),
     AutoRoute(page: ItemDetailsRoute.page, path: '/item-details'),
     AutoRoute(page: PutawayRoute.page, path: '/putaway'),
+    AutoRoute(page: PickingRoute.page, path: '/picking'),
     AutoRoute(page: PutawayTasksListRoute.page, path: '/putaway-tasks'),
+    AutoRoute(page: PickingTasksListRoute.page, path: '/picking-tasks'),
     AutoRoute(page: PutawayTaskDetailsRoute.page, path: '/putaway-task-details'),
+    AutoRoute(page: PickingTaskDetailsRoute.page, path: '/picking-task-details'),
   ];
 }

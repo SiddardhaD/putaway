@@ -12,11 +12,13 @@ abstract class PutawayRemoteDataSource {
     required String orderNumber,
     required String orderType,
     required String branchPlant,
+    required String version,
   });
   
   Future<ConfirmPutawayResponseModel> confirmPutaway({
     required String task,
     required String trip,
+    required String version,
   });
 }
 
@@ -32,6 +34,7 @@ class PutawayRemoteDataSourceImpl implements PutawayRemoteDataSource {
     required String orderNumber,
     required String orderType,
     required String branchPlant,
+    required String version,
   }) async {
     try {
       final token = await secureStorage.read(AppConstants.keyAccessToken);
@@ -52,6 +55,7 @@ class PutawayRemoteDataSourceImpl implements PutawayRemoteDataSource {
         'OrderNumber': orderNumber,
         'OrderType': orderType,
         'BranchPlant': branchPlant,
+        'Version': version,
       };
 
       _logger.d('PutawayRemoteDataSource: Request body: $requestBody');
@@ -92,6 +96,7 @@ class PutawayRemoteDataSourceImpl implements PutawayRemoteDataSource {
   Future<ConfirmPutawayResponseModel> confirmPutaway({
     required String task,
     required String trip,
+    required String version,
   }) async {
     try {
       final token = await secureStorage.read(AppConstants.keyAccessToken);
@@ -109,6 +114,7 @@ class PutawayRemoteDataSourceImpl implements PutawayRemoteDataSource {
         'token': token,
         'Task': task,
         'Trip': trip,
+        'Version': version,
       };
 
       _logger.d('PutawayRemoteDataSource: Request body: $requestBody');

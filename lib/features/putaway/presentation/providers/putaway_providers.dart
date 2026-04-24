@@ -41,7 +41,8 @@ final putawayViewModelProvider = StateNotifierProvider<PutawayViewModel, Putaway
   return PutawayViewModel(getPutawayTasksUseCase);
 });
 
-final confirmPutawayViewModelProvider = StateNotifierProvider<ConfirmPutawayViewModel, ConfirmPutawayState>((ref) {
+final confirmPutawayViewModelProvider =
+    StateNotifierProvider<ConfirmPutawayViewModel, ConfirmPutawayState>((ref) {
   final confirmPutawayUseCase = ref.read(confirmPutawayUseCaseProvider);
   return ConfirmPutawayViewModel(confirmPutawayUseCase);
 });
@@ -51,6 +52,3 @@ final putawayResultsProvider = StateProvider<List<PutawayTaskDetailEntity>>((ref
 
 // Provider to store last search parameters for refresh
 final putawaySearchParamsProvider = StateProvider<Map<String, String>?>((ref) => null);
-
-
-

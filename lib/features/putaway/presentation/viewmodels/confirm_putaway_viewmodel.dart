@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/usecases/confirm_putaway_usecase.dart';
 import '../states/confirm_putaway_state.dart';
 
@@ -7,7 +8,7 @@ class ConfirmPutawayViewModel extends StateNotifier<ConfirmPutawayState> {
   final ConfirmPutawayUseCase confirmPutawayUseCase;
   final Logger _logger = Logger();
 
-  ConfirmPutawayViewModel(this.confirmPutawayUseCase) 
+  ConfirmPutawayViewModel(this.confirmPutawayUseCase)
       : super(const ConfirmPutawayState.initial());
 
   Future<void> confirmPutaway({
@@ -17,7 +18,11 @@ class ConfirmPutawayViewModel extends StateNotifier<ConfirmPutawayState> {
     _logger.i('ConfirmPutawayViewModel: Confirming - task: $task, trip: $trip');
     state = const ConfirmPutawayState.loading();
 
-    final result = await confirmPutawayUseCase(task: task, trip: trip);
+    final result = await confirmPutawayUseCase(
+      task: task,
+      trip: trip,
+      version: AppConstants.orchestratorVersionPutaway,
+    );
 
     result.fold(
       (failure) {
