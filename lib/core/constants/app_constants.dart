@@ -35,6 +35,10 @@ class AppConstants {
   static const String endpointReceivePurchaseOrder = '/v3/orchestrator/ORCH_59_ReceivePurchaseOrder';
   static const String endpointPutawayTaskDetails = '/v3/orchestrator/ORCH_59_PutawayTaskDetails';
   static const String endpointConfirmPutaway = '/v3/orchestrator/ORCH_59_ConfirmPutawayRequest';
+  static const String endpointRoutingOrderDetails =
+      '/v3/orchestrator/ORCH_59_RoutingOrderdetails';
+  static const String endpointConfirmRouting =
+      '/v3/orchestrator/ORCH_59_ConfirmRouting';
   static const String endpointGetOrderDetails = '/orders/details';
   static const String endpointGetRecords = '/records';
   static const String endpointAddRecord = '/records/add';
@@ -49,6 +53,9 @@ class AppConstants {
 
   /// [OrderType] for picking flow task-details / refresh (ORCH_59_PutawayTaskDetails)
   static const String orderTypePickingTasks = 'SO';
+
+  /// [OrderType] for receipt routing (ORCH_59_RoutingOrderdetails / ConfirmRouting)
+  static const String orderTypeRouting = 'OP';
   
   // Device Name for API
   static const String deviceName = 'MOBILE_APP';

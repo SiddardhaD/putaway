@@ -17,6 +17,10 @@ class AuthInterceptor extends Interceptor {
     '/v3/orchestrator/ORCH_59_PutawayTaskDetails',
     AppConstants.endpointConfirmPutaway,
     '/v3/orchestrator/ORCH_59_ConfirmPutawayRequest',
+    AppConstants.endpointRoutingOrderDetails,
+    '/v3/orchestrator/ORCH_59_RoutingOrderdetails',
+    AppConstants.endpointConfirmRouting,
+    '/v3/orchestrator/ORCH_59_ConfirmRouting',
   ];
 
   bool _isPublicEndpoint(String path) {
