@@ -205,20 +205,20 @@ class _PickingScreenState extends ConsumerState<PickingScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Enter order number to view picking tasks',
+                        'Enter Purchase Order Number to view picking tasks',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: AppColors.textSecondary,
                             ),
                       ),
                       const SizedBox(height: 24),
                       CustomTextField(
-                        label: 'Order Number *',
+                        label: 'Sales Order *',
                         controller: _orderNumberController,
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.qr_code_scanner),
                           onPressed: _scanBarcode,
                         ),
-                        hint: 'Scan or enter order number',
+                        hint: 'Scan or enter Sales Order No #',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return AppStrings.fieldRequired;

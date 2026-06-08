@@ -5,6 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/routing_line_detail_entity.dart';
 import '../../domain/repositories/routing_repository.dart';
 import '../datasources/routing_remote_data_source.dart';
+import '../models/routing_lot_dates_model.dart';
 
 class RoutingRepositoryImpl implements RoutingRepository {
   final RoutingRemoteDataSource remoteDataSource;
@@ -26,7 +27,42 @@ class RoutingRepositoryImpl implements RoutingRepository {
         branchPlant: branchPlant,
         containerId: containerId,
       );
-      return Right(models.map((m) => m.toEntity()).toList());
+
+      final lotDatesCache = <String, RoutingLotDatesModel>{};
+      final entities = <RoutingLineDetailEntity>[];
+
+      for (final m in models) {
+        var exp = '';
+        var mfg = '';
+        final lot = m.lotNumber.trim();
+        final item = m.itemNumber.trim();
+        if (lot.isNotEmpty && item.isNotEmpty) {
+          final cacheKey = '$lot|$item|$branchPlant';
+          try {
+            if (!lotDatesCache.containsKey(cacheKey)) {
+              lotDatesCache[cacheKey] = await remoteDataSource.fetchLotDetails(
+                lotNumber: lot,
+                itemNumber: item,
+                branchPlant: branchPlant,
+              );
+            }
+            final dates = lotDatesCache[cacheKey]!;
+            exp = dates.lotExpirationDate;
+            mfg = dates.manufacturingDate;
+          } catch (e, st) {
+            _logger.w(
+              'RoutingRepository: FetchLotDetails skipped for $cacheKey: $e',
+              error: e,
+              stackTrace: st,
+            );
+          }
+        }
+        entities.add(
+          m.toEntity(lotExpirationDate: exp, manufacturingDate: mfg),
+        );
+      }
+
+      return Right(entities);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.code));
     } on NetworkException catch (e) {

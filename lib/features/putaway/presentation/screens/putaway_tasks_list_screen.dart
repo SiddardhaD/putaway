@@ -487,41 +487,28 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
       );
     });
 
-    return WillPopScope(
-      onWillPop: () async => !isLoading, // Prevent closing while loading
+    return PopScope(
+      canPop: !isLoading,
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 8,
         child: Container(
           constraints: const BoxConstraints(
             maxWidth: 400,
-            maxHeight: 500, // Add max height constraint
+            maxHeight: 460,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header with icon (Fixed at top)
               Container(
-                padding: const EdgeInsets.all(24),
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
                 decoration: const BoxDecoration(
                   color: Color(0xFF00BCD4),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(51),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check_circle_outline,
-                        size: 48,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Text(
                       'Please Confirm Task #${widget.task.task}',
                       style: const TextStyle(
@@ -530,8 +517,9 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                         color: Colors.white,
                         letterSpacing: 0.5,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
                       'Trip: ${widget.task.trip} • Review details before confirming',
                       style: TextStyle(
@@ -544,19 +532,17 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                 ),
               ),
 
-              // Content (Scrollable)
               Flexible(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Task & Trip (Highlighted section)
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE0F7FA), // Light mint
+                            color: const Color(0xFFE0F7FA),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: const Color(0xFF00BCD4).withAlpha(77),
@@ -564,6 +550,7 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                             ),
                           ),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
@@ -584,49 +571,73 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-                              _buildDetailRow(
-                                'Task Number',
-                                widget.task.task.toString(),
-                                Icons.tag,
-                              ),
-                              const SizedBox(height: 8),
-                              _buildDetailRow(
-                                'Trip Number',
-                                widget.task.trip.toString(),
-                                Icons.route,
+                              const SizedBox(height: 10),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: _buildDetailHalf(
+                                      'Task Number',
+                                      widget.task.task.toString(),
+                                      Icons.tag,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: _buildDetailHalf(
+                                      'Trip Number',
+                                      widget.task.trip.toString(),
+                                      Icons.route,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-
-                        const SizedBox(height: 16),
-
-                        // Other details
-                        _buildDetailRow(
-                          'From Location',
-                          widget.task.fromLocation,
-                          Icons.location_on_outlined,
+                        const SizedBox(height: 12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildDetailHalf(
+                                'From Location',
+                                widget.task.fromLocation,
+                                Icons.location_on_outlined,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildDetailHalf(
+                                'To Location',
+                                widget.task.toLocation,
+                                Icons.location_on,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        _buildDetailRow(
-                          'To Location',
-                          widget.task.toLocation,
-                          Icons.location_on,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildDetailRow(
-                          'Quantity',
-                          '${widget.task.quantity} ${widget.task.um}',
-                          Icons.inventory_2_outlined,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildDetailRow(
-                          'LOT/Serial',
-                          widget.task.fromLot.trim().isEmpty
-                              ? 'N/A'
-                              : widget.task.fromLot,
-                          Icons.qr_code_2_outlined,
+                        const SizedBox(height: 10),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildDetailHalf(
+                                'Quantity',
+                                '${widget.task.quantity} ${widget.task.um}',
+                                Icons.inventory_2_outlined,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildDetailHalf(
+                                'LOT/Serial',
+                                widget.task.fromLot.trim().isEmpty
+                                    ? 'N/A'
+                                    : widget.task.fromLot,
+                                Icons.qr_code_2_outlined,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -634,12 +645,11 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
                 ),
               ),
 
-              // Actions (Fixed at bottom)
               if (isLoading)
-                const Padding(
-                  padding: EdgeInsets.all(24),
+                Padding(
+                  padding: const EdgeInsets.all(24),
                   child: Column(
-                    children: [
+                    children: const [
                       CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
                           Color(0xFF00BCD4),
@@ -724,43 +734,47 @@ class _ConfirmPutawayDialogState extends ConsumerState<_ConfirmPutawayDialog> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF00BCD4).withAlpha(26),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 18, color: const Color(0xFF008BA3)),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildDetailHalf(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00BCD4).withAlpha(26),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF008BA3),
-                  fontWeight: FontWeight.bold,
+              Icon(icon, size: 16, color: const Color(0xFF008BA3)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF008BA3),
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,7 +1,7 @@
 class AppStrings {
   AppStrings._();
 
-  static const String appName = 'Put Away';
+  static const String appName = 'ABG Warehouse Management';
   
   // General
   static const String ok = 'OK';
@@ -52,7 +52,7 @@ class AppStrings {
   static const String intransitShipment = 'Intransit Shipment';
   static const String searchOrders = 'Search Orders';
   static const String orderType = 'Order Type';
-  static const String orderNumber = 'Order Number';
+  static const String orderNumber = 'Purchase Order Number';
   static const String noOrdersFound = 'No orders found';
   
   // Records

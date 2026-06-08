@@ -39,6 +39,8 @@ class AppConstants {
       '/v3/orchestrator/ORCH_59_RoutingOrderdetails';
   static const String endpointConfirmRouting =
       '/v3/orchestrator/ORCH_59_ConfirmRouting';
+  static const String endpointFetchLotDetails =
+      '/v3/orchestrator/ORCH_59_FetchLotDetails';
   static const String endpointGetOrderDetails = '/orders/details';
   static const String endpointGetRecords = '/records';
   static const String endpointAddRecord = '/records/add';

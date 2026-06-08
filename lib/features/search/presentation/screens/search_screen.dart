@@ -87,7 +87,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _scanBarcode() async {
     final result = await showBarcodeScanner(
       context,
-      title: 'Scan Order Number',
+      title: 'Scan Purchase Order Number',
     );
     if (result != null && result.isNotEmpty) {
       _logger.i('SearchScreen: Barcode scanned - $result');

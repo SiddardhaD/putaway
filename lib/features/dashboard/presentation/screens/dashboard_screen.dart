@@ -48,12 +48,21 @@ class DashboardScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 childAspectRatio: 1.1,
                 children: [
-                  _AppCard(
-                    title: 'PO Receipt',
-                    icon: Icons.inventory_2_outlined,
-                    color: const Color(0xFF2563EB), // Professional blue
+                  // PO Receipt — hidden for demo (uncomment to restore flow to /search).
+                  // _AppCard(
+                  //   title: 'PO Receipt',
+                  //   icon: Icons.inventory_2_outlined,
+                  //   color: const Color(0xFF2563EB), // Professional blue
+                  //   onTap: () {
+                  //     context.router.pushNamed('/search');
+                  //   },
+                  // ),
+                   _AppCard(
+                    title: 'Routing',
+                    icon: Icons.alt_route,
+                    color: AppColors.secondaryDark,
                     onTap: () {
-                      context.router.pushNamed('/search');
+                      context.router.pushNamed('/routing');
                     },
                   ),
                   _AppCard(
@@ -72,14 +81,7 @@ class DashboardScreen extends StatelessWidget {
                       context.router.pushNamed('/picking');
                     },
                   ),
-                  _AppCard(
-                    title: 'Routing',
-                    icon: Icons.alt_route,
-                    color: AppColors.secondaryDark,
-                    onTap: () {
-                      context.router.pushNamed('/routing');
-                    },
-                  ),
+                 
                 ],
               ),
             ),

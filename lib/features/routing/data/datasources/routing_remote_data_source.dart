@@ -3,6 +3,7 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/storage/secure_storage_service.dart';
 import '../models/routing_line_detail_model.dart';
+import '../models/routing_lot_dates_model.dart';
 
 abstract class RoutingRemoteDataSource {
   Future<List<RoutingLineDetailModel>> getRoutingLineDetails({
@@ -10,6 +11,13 @@ abstract class RoutingRemoteDataSource {
     required String orderType,
     required String branchPlant,
     required String containerId,
+  });
+
+  /// ORCH_59_FetchLotDetails — body: LotNumber, ItemNumber, BranchPlant.
+  Future<RoutingLotDatesModel> fetchLotDetails({
+    required String lotNumber,
+    required String itemNumber,
+    required String branchPlant,
   });
 
   Future<void> confirmRouting({
@@ -69,6 +77,48 @@ class RoutingRemoteDataSourceImpl implements RoutingRemoteDataSource {
     return rawList
         .map((e) => RoutingLineDetailModel.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  @override
+  Future<RoutingLotDatesModel> fetchLotDetails({
+    required String lotNumber,
+    required String itemNumber,
+    required String branchPlant,
+  }) async {
+    final token = await secureStorage.read(AppConstants.keyAccessToken);
+    if (token == null || token.isEmpty) {
+      throw Exception('Authentication token not found. Please login again.');
+    }
+
+    final requestBody = {
+      'deviceName': AppConstants.deviceName,
+      'token': token,
+      'LotNumber': lotNumber,
+      'ItemNumber': itemNumber,
+      'BranchPlant': branchPlant,
+    };
+
+    _logger.i(
+      'RoutingRemoteDataSource: FetchLotDetails request (LotNumber, ItemNumber, BranchPlant only in logs): '
+      'LotNumber=$lotNumber ItemNumber=$itemNumber BranchPlant=$branchPlant',
+    );
+
+    final response = await dioClient.post(
+      AppConstants.endpointFetchLotDetails,
+      data: requestBody,
+    );
+
+    if (response.data == null) {
+      throw Exception('Empty response from FetchLotDetails');
+    }
+
+    final data = response.data as Map<String, dynamic>;
+    final status = data['jde__status']?.toString();
+    if (status != null && status.isNotEmpty && status != 'SUCCESS') {
+      throw Exception('FetchLotDetails failed: $status');
+    }
+
+    return RoutingLotDatesModel.fromJson(data);
   }
 
   @override

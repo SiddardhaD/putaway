@@ -215,6 +215,15 @@ class _RoutingLinesListScreenState extends ConsumerState<RoutingLinesListScreen>
                                         fontWeight: FontWeight.w600,
                                       ),
                                 ),
+                                if (line.itemNumber.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Item: ${line.itemNumber}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                  ),
+                                ],
                                 if (line.lotNumber.trim().isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Text(
@@ -224,6 +233,24 @@ class _RoutingLinesListScreenState extends ConsumerState<RoutingLinesListScreen>
                                         ),
                                   ),
                                 ],
+                                // if (line.manufacturingDate.trim().isNotEmpty) ...[
+                                //   const SizedBox(height: 4),
+                                //   Text(
+                                //     'Mfg: ${line.manufacturingDate}',
+                                //     style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                //           color: AppColors.textSecondary,
+                                //         ),
+                                //   ),
+                                // ],
+                                // if (line.lotExpirationDate.trim().isNotEmpty) ...[
+                                //   Text(
+                                //     'Expiry: ${line.lotExpirationDate}',
+                                //     style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                //           color: AppColors.secondaryDark,
+                                //           fontWeight: FontWeight.w600,
+                                //         ),
+                                //   ),
+                                // ],
                                 if (line.containerId.trim().isNotEmpty) ...[
                                   Text(
                                     'Container: ${line.containerId}',
@@ -304,43 +331,32 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 8,
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 520),
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 560),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
                 decoration: const BoxDecoration(
-                  color: AppColors.secondary,
+                  color: Color(0xFF00BCD4),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(51),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check_circle_outline,
-                        size: 48,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Text(
-                      'Confirm routing line ${widget.line.lineNumber}',
+                      'Please Confirm Routing Line #${widget.line.lineNumber}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        letterSpacing: 0.5,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
-                      '${widget.line.operationCode} • Review before confirming',
+                      '${widget.line.operationCode} • Review details before confirming',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withAlpha(230),
@@ -360,66 +376,72 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.putawayLight,
+                            color: const Color(0xFFE0F7FA),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.secondary.withAlpha(77),
+                              color: const Color(0xFF00BCD4).withAlpha(77),
                               width: 1.5,
                             ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _detailRow(
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.alt_route,
+                                    color: Color(0xFF008BA3),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Line Details',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF008BA3),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              _buildRoutingDetailRow(
+                                'Line Number',
+                                widget.line.lineNumber.toString(),
+                                Icons.tag,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildRoutingDetailRow(
                                 'Operation',
                                 widget.line.operationCode,
                                 Icons.settings_outlined,
                               ),
-                              const SizedBox(height: 8),
-                              _detailRow(
-                                'Quantity',
-                                '${widget.line.quantity} ${widget.line.unitMeasure}',
-                                Icons.inventory_2_outlined,
-                              ),
-                              const SizedBox(height: 8),
-                              _detailRow(
-                                'Supplier',
-                                widget.line.supplierName.isEmpty ? '—' : widget.line.supplierName,
-                                Icons.business_outlined,
-                              ),
-                              const SizedBox(height: 8),
-                              _detailRow(
-                                'Lot',
-                                widget.line.lotNumber.trim().isEmpty ? '—' : widget.line.lotNumber,
-                                Icons.qr_code_2_outlined,
-                              ),
-                              const SizedBox(height: 8),
-                              _detailRow(
-                                'Container',
-                                widget.line.containerId.trim().isEmpty ? '—' : widget.line.containerId,
-                                Icons.local_shipping_outlined,
-                              ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        _routingDetailsTwoColumnGrid(widget.line),
                       ],
                     ),
                   ),
                 ),
               ),
               if (isLoading)
-                const Padding(
-                  padding: EdgeInsets.all(24),
+                Padding(
+                  padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondary),
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF00BCD4),
+                        ),
                       ),
-                      SizedBox(height: 12),
-                      Text(
+                      const SizedBox(height: 12),
+                      const Text(
                         'Processing...',
                         style: TextStyle(
-                          color: AppColors.putawayDark,
+                          color: Color(0xFF008BA3),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -428,15 +450,24 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
                   ),
                 )
               else
-                Padding(
+                Container(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(16),
+                    ),
+                  ),
                   child: Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.secondary, width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFF00BCD4),
+                              width: 1.5,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -445,8 +476,9 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
                           child: const Text(
                             'Cancel',
                             style: TextStyle(
-                              color: AppColors.putawayDark,
+                              color: Color(0xFF008BA3),
                               fontWeight: FontWeight.w600,
+                              fontSize: 15,
                             ),
                           ),
                         ),
@@ -456,7 +488,7 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
                         child: ElevatedButton(
                           onPressed: _handleConfirm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
+                            backgroundColor: const Color(0xFF00BCD4),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -466,7 +498,11 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
                           ),
                           child: const Text(
                             'Confirm',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),
@@ -480,17 +516,158 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
     );
   }
 
-  Widget _detailRow(String label, String value, IconData icon) {
+  /// Compact field for two-column rows in the confirmation dialog.
+  Widget _buildRoutingDetailHalf(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00BCD4).withAlpha(26),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: const Color(0xFF008BA3)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF008BA3),
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _routingDetailsTwoColumnGrid(RoutingLineDetailEntity line) {
+    final quantity = '${line.quantity} ${line.unitMeasure}';
+    final supplier =
+        line.supplierName.isEmpty ? 'N/A' : line.supplierName;
+    final item =
+        line.itemNumber.trim().isEmpty ? 'N/A' : line.itemNumber.trim();
+    final lot =
+        line.lotNumber.trim().isEmpty ? 'N/A' : line.lotNumber.trim();
+    final mfg = line.manufacturingDate.trim().isEmpty
+        ? 'N/A'
+        : line.manufacturingDate.trim();
+    final exp = line.lotExpirationDate.trim().isEmpty
+        ? 'N/A'
+        : line.lotExpirationDate.trim();
+    final container = line.containerId.trim().isEmpty
+        ? 'N/A'
+        : line.containerId.trim();
+
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _buildRoutingDetailHalf(
+                'Quantity',
+                quantity,
+                Icons.inventory_2_outlined,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildRoutingDetailHalf(
+                'Supplier',
+                supplier,
+                Icons.business_outlined,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _buildRoutingDetailHalf(
+                'Item',
+                item,
+                Icons.inventory_outlined,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildRoutingDetailHalf(
+                'LOT/Serial',
+                lot,
+                Icons.qr_code_2_outlined,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _buildRoutingDetailHalf(
+                'Manufacturing date',
+                mfg,
+                Icons.factory_outlined,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildRoutingDetailHalf(
+                'Lot expiry',
+                exp,
+                Icons.event_outlined,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: _buildRoutingDetailHalf(
+            'Container',
+            container,
+            Icons.local_shipping_outlined,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Matches putaway task confirmation dialog row styling.
+  Widget _buildRoutingDetailRow(String label, String value, IconData icon) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.secondary.withAlpha(26),
+            color: const Color(0xFF00BCD4).withAlpha(26),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: AppColors.putawayDark),
+          child: Icon(icon, size: 18, color: const Color(0xFF008BA3)),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -510,7 +687,7 @@ class _ConfirmRoutingDialogState extends ConsumerState<_ConfirmRoutingDialog> {
                 value,
                 style: const TextStyle(
                   fontSize: 15,
-                  color: AppColors.putawayDark,
+                  color: Color(0xFF008BA3),
                   fontWeight: FontWeight.bold,
                 ),
               ),

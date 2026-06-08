@@ -7,6 +7,7 @@ class RoutingLineDetailModel {
   final String unitMeasure;
   final String supplierName;
   final String lotNumber;
+  final String itemNumber;
   final String containerId;
 
   RoutingLineDetailModel({
@@ -16,6 +17,7 @@ class RoutingLineDetailModel {
     required this.unitMeasure,
     required this.supplierName,
     required this.lotNumber,
+    required this.itemNumber,
     required this.containerId,
   });
 
@@ -27,11 +29,15 @@ class RoutingLineDetailModel {
       unitMeasure: json['UnitMeasure']?.toString() ?? '',
       supplierName: json['SupplierName']?.toString() ?? '',
       lotNumber: json['LotNumber']?.toString() ?? '',
+      itemNumber: json['ItemNumber']?.toString().trim() ?? '',
       containerId: json['ContainerId']?.toString().trim() ?? '',
     );
   }
 
-  RoutingLineDetailEntity toEntity() {
+  RoutingLineDetailEntity toEntity({
+    String lotExpirationDate = '',
+    String manufacturingDate = '',
+  }) {
     return RoutingLineDetailEntity(
       lineNumber: lineNumber,
       operationCode: operationCode,
@@ -39,7 +45,10 @@ class RoutingLineDetailModel {
       unitMeasure: unitMeasure,
       supplierName: supplierName,
       lotNumber: lotNumber,
+      itemNumber: itemNumber,
       containerId: containerId,
+      lotExpirationDate: lotExpirationDate,
+      manufacturingDate: manufacturingDate,
     );
   }
 }

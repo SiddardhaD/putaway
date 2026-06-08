@@ -152,14 +152,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: Image.asset(
                       'assets/images/logo.png',
-                      width: 180,
-                      height: 180,
+                      width: 120,
+                      height: 120,
                       fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(height: 32),
                   Text(
                     AppStrings.appName,
+                    textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

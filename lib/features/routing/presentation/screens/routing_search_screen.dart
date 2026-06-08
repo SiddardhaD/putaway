@@ -177,16 +177,16 @@ class _RoutingSearchScreenState extends ConsumerState<RoutingSearchScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enter order ID (required). Container ID is optional — leave blank to send empty.',
+                  'Enter Purchase Order Number (required). Container ID is optional — leave blank to send empty.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                 ),
                 const SizedBox(height: 24),
                 CustomTextField(
-                  label: 'Order ID *',
+                  label: 'Purchase Order #*',
                   controller: _orderController,
-                  hint: 'Scan or enter order number',
+                  hint: 'Scan or enter order #',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.qr_code_scanner),
                     onPressed: _scanOrder,

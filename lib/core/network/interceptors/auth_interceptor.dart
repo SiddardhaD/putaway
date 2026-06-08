@@ -21,6 +21,8 @@ class AuthInterceptor extends Interceptor {
     '/v3/orchestrator/ORCH_59_RoutingOrderdetails',
     AppConstants.endpointConfirmRouting,
     '/v3/orchestrator/ORCH_59_ConfirmRouting',
+    AppConstants.endpointFetchLotDetails,
+    '/v3/orchestrator/ORCH_59_FetchLotDetails',
   ];
 
   bool _isPublicEndpoint(String path) {

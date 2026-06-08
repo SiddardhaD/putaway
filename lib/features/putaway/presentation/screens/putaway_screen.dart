@@ -204,20 +204,20 @@ class _PutawayScreenState extends ConsumerState<PutawayScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Enter order number to view putaway tasks',
+                        'Enter Purchase Order Number to view putaway tasks',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: AppColors.textSecondary,
                             ),
                       ),
                       const SizedBox(height: 24),
                       CustomTextField(
-                        label: 'Order Number *',
+                        label: 'Purchase Order # *',
                         controller: _orderNumberController,
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.qr_code_scanner),
                           onPressed: _scanBarcode,
                         ),
-                        hint: 'Scan or enter order number',
+                        hint: 'Scan or enter Purchase Order Number',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return AppStrings.fieldRequired;
